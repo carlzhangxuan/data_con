@@ -19,6 +19,7 @@ train_df = pd.read_csv('train.csv', header=0)        # Load the train file into 
 # female = 0, Male = 1
 train_df['Gender'] = train_df['Sex'].map( {'female': 0, 'male': 1} ).astype(int)
 
+
 # Embarked from 'C', 'Q', 'S'
 # Note this is not ideal: in translating categories to numbers, Port "2" is not 2 times greater than Port "1", etc.
 
@@ -42,9 +43,14 @@ if len(train_df.Fare[ train_df.Fare.isnull() ]) > 0:
     for f in range(0,3):                                              # loop 0 to 2
         train_df.loc[ (train_df.Fare.isnull()) & (train_df.Pclass == f+1 ), 'Fare'] = median_fare[f]
 
-# Remove the Name column, Cabin, Ticket, and Sex (since I copied and filled it to Gender)
-train_df = train_df.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'PassengerId'], axis=1) 
+#drop col
+drop_col = ['Name', 'Ticket', 'Cabin', 'PassengerId', 'Sex', 'Embarked']
+predictors = ["Survived", "Pclass", "Gender", "Age", "SibSp", "Parch", "Embarked"]
+predictors_t = ["Pclass", "Gender", "Age", "SibSp", "Parch", "Embarked"]
 
+# Remove the Name column, Cabin, Ticket, and Sex (since I copied and filled it to Gender)
+train_df = train_df.drop(drop_col, axis=1) 
+#train_df = train_df[predictors]
 
 # TEST DATA
 test_df = pd.read_csv('test.csv', header=0)        # Load the test file into a dataframe
@@ -78,13 +84,14 @@ if len(test_df.Fare[ test_df.Fare.isnull() ]) > 0:
 # Collect the test data's PassengerIds before dropping it
 ids = test_df['PassengerId'].values
 # Remove the Name column, Cabin, Ticket, and Sex (since I copied and filled it to Gender)
-test_df = test_df.drop(['Name', 'Sex', 'Ticket', 'Cabin', 'PassengerId'], axis=1) 
-
+test_df = test_df.drop(drop_col, axis=1) 
+#test_df = test_df[predictors_t]
 
 # The data is now ready to go. So lets fit to the train, then predict to the test!
 # Convert back to a numpy array
 train_data = train_df.values
 test_data = test_df.values
+
 
 idx = range(len(train_data))
 random.shuffle(idx)
@@ -103,47 +110,52 @@ train_y_te = [train_y[i] for i in test_idx]
 
 res = []
 for x in xrange(50, 1000, 50):
-	for y in ([3]):
-		forest = GradientBoostingClassifier(n_estimators=x, max_depth=y)
-		forest = forest.fit( train_X_tr, train_y_tr )	
-		output = forest.predict(train_X_te).astype(int)
-		y_true = train_y_te
-		y_pred = output	
-		print x, accuracy_score(y_true, y_pred)	
+    for y in ([3]):
+        forest = GradientBoostingClassifier(n_estimators=x, max_depth=y)
+        forest = forest.fit( train_X_tr, train_y_tr )   
+        output = forest.predict(train_X_te).astype(int)
+        y_true = train_y_te
+        y_pred = output 
+        print x, accuracy_score(y_true, y_pred) 
 
-		res.append((x, accuracy_score(y_true, y_pred), 'gbdt', str(y)))	
+        res.append((x, accuracy_score(y_true, y_pred), 'gbdt', str(y))) 
 
-		forest = RandomForestClassifier(n_estimators=x, max_depth=y)
-		forest = forest.fit( train_X_tr, train_y_tr )	
+        forest = RandomForestClassifier(n_estimators=x, max_depth=y)
+        forest = forest.fit( train_X_tr, train_y_tr )   
 
-		output = forest.predict(train_X_te).astype(int)
-		y_true = train_y_te
-		y_pred = output	
-		print x, accuracy_score(y_true, y_pred)	
+        output = forest.predict(train_X_te).astype(int)
+        y_true = train_y_te
+        y_pred = output 
+        print x, accuracy_score(y_true, y_pred) 
 
-		res.append((x, accuracy_score(y_true, y_pred), 'rf', str(y)))
+        res.append((x, accuracy_score(y_true, y_pred), 'rf', str(y)))
 
-		forest = xgb.XGBClassifier(max_depth=y, n_estimators=x, learning_rate=0.05)
-		forest = forest.fit( train_X_tr, train_y_tr )	
-		output = forest.predict(train_X_te).astype(int)
-		y_true = train_y_te
-		y_pred = output	
-		print x, accuracy_score(y_true, y_pred)	
-		
-		res.append((x, accuracy_score(y_true, y_pred), 'xgboost', str(y)))
+        forest = xgb.XGBClassifier(max_depth=y, n_estimators=x, learning_rate=0.05)
+        forest = forest.fit( train_X_tr, train_y_tr )   
+        output = forest.predict(train_X_te).astype(int)
+        y_true = train_y_te
+        y_pred = output 
+        print x, accuracy_score(y_true, y_pred) 
+        
+        res.append((x, accuracy_score(y_true, y_pred), 'xgboost', str(y)))
 
 res = sorted(res, key = lambda x:x[1], reverse = True)
 print res
 cls = {'gbdt':GradientBoostingClassifier, 'rf':RandomForestClassifier, 'xgboost':xgb.XGBClassifier}
 n = int(res[0][0])
-max_depth =	int(res[0][3])
+max_depth = int(res[0][3])
 cla = cls[res[0][2]] 
 print n, cla, max_depth
 fn = '_'.join([str(n), str(res[0][2]), str(max_depth)])
 
+
+#forest = GradientBoostingClassifier(n_estimators=150, max_depth=3)
 forest = cla(n_estimators=n, max_depth=max_depth)
+
 forest = forest.fit( train_X, train_y )
+
 output = forest.predict(test_data).astype(int)
+
 predictions_file = open("zx_cross_"+fn+".csv", "wb")
 open_file_object = csv.writer(predictions_file)
 open_file_object.writerow(["PassengerId","Survived"])
