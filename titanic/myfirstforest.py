@@ -3,6 +3,7 @@ import numpy as np
 import csv as csv
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.metrics import classification_report
 import xgboost as xgb
 from sklearn.metrics import accuracy_score
@@ -44,9 +45,9 @@ if len(train_df.Fare[ train_df.Fare.isnull() ]) > 0:
         train_df.loc[ (train_df.Fare.isnull()) & (train_df.Pclass == f+1 ), 'Fare'] = median_fare[f]
 
 #drop col
-drop_col = ['Name', 'Ticket', 'Cabin', 'PassengerId', 'Sex', 'Embarked']
-predictors = ["Survived", "Pclass", "Gender", "Age", "SibSp", "Parch", "Embarked"]
-predictors_t = ["Pclass", "Gender", "Age", "SibSp", "Parch", "Embarked"]
+drop_col = ['Name', 'Ticket', 'Cabin', 'PassengerId', 'Sex']
+#predictors = ["Survived", "Pclass", "Gender", "Age", "SibSp", "Parch", "Embarked"]
+#predictors_t = ["Pclass", "Gender", "Age", "SibSp", "Parch", "Embarked"]
 
 # Remove the Name column, Cabin, Ticket, and Sex (since I copied and filled it to Gender)
 train_df = train_df.drop(drop_col, axis=1) 
@@ -108,6 +109,8 @@ train_X_te = [train_X[i] for i in test_idx]
 train_y_te = [train_y[i] for i in test_idx]
 
 
+RandomForestClassifier = ExtraTreesClassifier
+"""
 res = []
 for x in xrange(50, 1000, 50):
     for y in ([3]):
@@ -120,7 +123,7 @@ for x in xrange(50, 1000, 50):
 
         res.append((x, accuracy_score(y_true, y_pred), 'gbdt', str(y))) 
 
-        forest = RandomForestClassifier(n_estimators=x, max_depth=y)
+        forest = RandomForestClassifier(n_estimators=x, max_depth=y, max_features= 3, criterion= 'entropy',min_samples_split= 1, min_samples_leaf= 2, n_jobs = -1)
         forest = forest.fit( train_X_tr, train_y_tr )   
 
         output = forest.predict(train_X_te).astype(int)
@@ -147,10 +150,16 @@ max_depth = int(res[0][3])
 cla = cls[res[0][2]] 
 print n, cla, max_depth
 fn = '_'.join([str(n), str(res[0][2]), str(max_depth)])
+"""
+
+n = 2000
+max_depth = 3
+fn = 'tmp'
+cla = ExtraTreesClassifier
 
 
 #forest = GradientBoostingClassifier(n_estimators=150, max_depth=3)
-forest = cla(n_estimators=n, max_depth=max_depth)
+forest = cla(n_estimators=100, max_features= 6,criterion= 'entropy',min_samples_split= 5, max_depth=20 , min_samples_leaf= 2, n_jobs = -1)
 
 forest = forest.fit( train_X, train_y )
 
