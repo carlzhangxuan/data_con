@@ -178,11 +178,15 @@ def predict(f_k=50, trained=False):
         print ','.join([str(ids), str(pre[1])])
   
 if __name__ == '__main__':
+    import time
+    st = time.time()
     flg = False
     #prepare(100)
     #data_prepare()
     #train(f_k=50)
     predict(f_k=51, trained=flg)
+    ed = time.time()
+    print int(ed - st)
 
 
 
