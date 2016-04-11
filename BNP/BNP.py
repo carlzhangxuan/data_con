@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.cross_validation import KFold
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import log_loss
@@ -98,19 +99,22 @@ def data_prepare(f_k=20):
             if tmp_len>0:
                 #train.loc[train_series.isnull(), train_name] = train_series.mean()
                 train.loc[train_series.isnull(), train_name] = train_series.min()*2
+                #train.loc[train_series.isnull(), train_name] = -9999
             tmp_len = len(test[test_series.isnull()])
             if tmp_len>0:
                 #test.loc[test_series.isnull(), test_name] = test_series.mean()
                 test.loc[test_series.isnull(), test_name] = test_series.min()*2
+                #test.loc[test_series.isnull(), test_name] = -9999
 
     #feature selection by ANOVA 
+    """
     feature_s = SelectKBest(f_classif, k=f_k).fit(train, y)
     f_index = feature_s.get_support()
     feature_sd = [x[0] for x in  filter(lambda (x, y): y == True, zip(train.columns, f_index))]
     print feature_sd
     train = train[feature_sd]
     test = test[feature_sd]
-    
+    """
     
     X = train.values
     t = test.values
@@ -132,7 +136,8 @@ def train(f_k=50, n_folds=10, KFold=False, max_depth=3, n_estimators=200, learni
             train_X_va = [X[i] for i in valid_idx]
             train_y_va = [y[i] for i in valid_idx]
 
-            forest = xgb.XGBClassifier(max_depth=max_depth, n_estimators=n_estimators, learning_rate=learning_rate)
+            #forest = xgb.XGBClassifier(max_depth=max_depth, n_estimators=n_estimators, learning_rate=learning_rate)
+            forest = ExtraTreesClassifier(n_estimators=700, max_features= 50,criterion= 'entropy', min_samples_split= 5, max_depth= 50, min_samples_leaf= 5)
             forest = forest.fit(train_X_tr, train_y_tr)
             output = forest.predict(train_X_va).astype(int)
             print accuracy_score(train_y_va, output)
@@ -146,7 +151,8 @@ def train(f_k=50, n_folds=10, KFold=False, max_depth=3, n_estimators=200, learni
         train_X_va = [X[i] for i in valid_idx]
         train_y_va = [y[i] for i in valid_idx]
     
-    forest = xgb.XGBClassifier(max_depth=max_depth, n_estimators=n_estimators, learning_rate=learning_rate)
+    #forest = xgb.XGBClassifier(max_depth=max_depth, n_estimators=n_estimators, learning_rate=learning_rate)
+    forest = ExtraTreesClassifier(n_estimators=700, max_features= 50,criterion= 'entropy', min_samples_split= 5, max_depth= 50, min_samples_leaf= 5)
     forest = forest.fit(train_X_tr, train_y_tr)
     output = forest.predict(train_X_va).astype(int)
     print accuracy_score(train_y_va, output)
@@ -163,7 +169,8 @@ def predict(f_k=50, trained=False):
     else:
         print 'train again'
         y, X, tid, test = data_prepare(f_k=f_k)
-        forest = xgb.XGBClassifier(max_depth=3, n_estimators=200, learning_rate=0.05)
+        #forest = xgb.XGBClassifier(max_depth=3, n_estimators=200, learning_rate=0.05)
+        forest = ExtraTreesClassifier(n_estimators=700, max_features= 50,criterion= 'entropy', min_samples_split= 5, max_depth= 50, min_samples_leaf= 5)
         forest = forest.fit(X, y)
         output = forest.predict_proba(test)
     
@@ -174,8 +181,8 @@ if __name__ == '__main__':
     flg = False
     #prepare(100)
     #data_prepare()
-    train(f_k=40)
-    #predict(f_k=40, trained=flg)
+    #train(f_k=50)
+    predict(f_k=51, trained=flg)
 
 
 
