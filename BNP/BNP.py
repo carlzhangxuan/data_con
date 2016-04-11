@@ -99,12 +99,12 @@ def data_prepare(f_k=20):
             if tmp_len>0:
                 #train.loc[train_series.isnull(), train_name] = train_series.mean()
                 train.loc[train_series.isnull(), train_name] = train_series.min()*2
-                #train.loc[train_series.isnull(), train_name] = -9999
+
             tmp_len = len(test[test_series.isnull()])
             if tmp_len>0:
                 #test.loc[test_series.isnull(), test_name] = test_series.mean()
                 test.loc[test_series.isnull(), test_name] = test_series.min()*2
-                #test.loc[test_series.isnull(), test_name] = -9999
+
 
     #feature selection by ANOVA 
     """
@@ -170,7 +170,7 @@ def predict(f_k=50, trained=False):
         print 'train again'
         y, X, tid, test = data_prepare(f_k=f_k)
         #forest = xgb.XGBClassifier(max_depth=3, n_estimators=200, learning_rate=0.05)
-        forest = ExtraTreesClassifier(n_estimators=700, max_features= 50,criterion= 'entropy', min_samples_split= 5, max_depth= 50, min_samples_leaf= 5)
+        forest = ExtraTreesClassifier(n_estimators=1000,max_features= 50,criterion= 'entropy',min_samples_split= 4, max_depth= 35, min_samples_leaf= 2, n_jobs = -1)
         forest = forest.fit(X, y)
         output = forest.predict_proba(test)
     
