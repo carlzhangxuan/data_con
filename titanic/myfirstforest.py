@@ -121,7 +121,7 @@ for x in xrange(50, 1000, 50):
         output = forest.predict(train_X_te).astype(int)
         y_true = train_y_te
         y_pred = output 
-        print x, accuracy_score(y_true, y_pred) 
+        print x, accuracy_score(y_true, y_pred)  k
         
         res.append((x, accuracy_score(y_true, y_pred), 'xgboost', str(y)))
 
@@ -142,10 +142,10 @@ fn = 'tmp'
 cla = ExtraTreesClassifier
 
 #forest = GradientBoostingClassifier(n_estimators=150, max_depth=3)
-tree = cla(n_estimators=200, max_features= 3,criterion= 'entropy',min_samples_split= 1, max_depth=20 , min_samples_leaf= 2, n_jobs = -1)
-forest = BaggingRegressor(tree, n_estimators=20, max_samples=0.8, max_features=1.0, bootstrap=True, bootstrap_features=False, n_jobs=-1)
+tree = cla(n_estimators=1000, max_features= 3,criterion= 'entropy',min_samples_split= 1, max_depth=20 , min_samples_leaf= 2, n_jobs = -1)
+#forest = BaggingRegressor(tree, n_estimators=20, max_samples=0.8, max_features=1.0, bootstrap=True, bootstrap_features=False, n_jobs=-1)
 
-forest = forest.fit( train_X, train_y )
+forest = tree.fit( train_X, train_y )
 
 output = forest.predict(test_data).astype(int)
 
