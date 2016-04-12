@@ -170,7 +170,7 @@ def predict(f_k=50, trained=False):
         print 'train again'
         y, X, tid, test = data_prepare(f_k=f_k)
         #forest = xgb.XGBClassifier(max_depth=3, n_estimators=200, learning_rate=0.05)
-        forest = ExtraTreesClassifier(n_estimators=1200,max_features= 50,criterion= 'entropy',min_samples_split= 4, max_depth= 35, min_samples_leaf= 2, n_jobs = -1)
+        forest = ExtraTreesClassifier(n_estimators=1500,max_features= 50,criterion= 'entropy',min_samples_split= 4, max_depth = 35, min_samples_leaf= 2, n_jobs = -1)
         forest = forest.fit(X, y)
         output = forest.predict_proba(test)
     
